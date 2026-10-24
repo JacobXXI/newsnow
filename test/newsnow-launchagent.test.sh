@@ -26,6 +26,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$bin_dir"
+expected_runtime_path="$(cd "$bin_dir" && pwd -P):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 cat >"$fake_launchctl" <<'EOF'
 #!/bin/bash
@@ -165,6 +166,7 @@ else
   assert_equals "10" "$(/usr/libexec/PlistBuddy -c 'Print :StartCalendarInterval:1:Hour' "$plist")" "plist schedules the stop boundary"
   assert_equals "$scheduler" "$(/usr/libexec/PlistBuddy -c 'Print :ProgramArguments:0' "$plist")" "plist runs the repository scheduler by absolute path"
   assert_equals "$fake_docker" "$(/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:NEWSNOW_DOCKER_BIN' "$plist")" "plist preserves the Docker path including XML metacharacters"
+  assert_equals "$expected_runtime_path" "$(/usr/libexec/PlistBuddy -c 'Print :EnvironmentVariables:PATH' "$plist")" "plist gives Docker access to credential helpers and system commands"
   assert_equals "$log_dir/schedule.stdout.log" "$(/usr/libexec/PlistBuddy -c 'Print :StandardOutPath' "$plist")" "plist preserves the stdout log path"
   assert_equals "$log_dir/schedule.stderr.log" "$(/usr/libexec/PlistBuddy -c 'Print :StandardErrorPath' "$plist")" "plist preserves the stderr log path"
 fi

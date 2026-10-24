@@ -31,6 +31,9 @@ if ! "$docker_bin" compose version >/dev/null 2>&1; then
   exit 7
 fi
 
+docker_dir=$(cd "$(dirname "$docker_bin")" && pwd -P)
+runtime_path="$docker_dir:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
 if [ ! -x "$scheduler" ]; then
   printf 'NewsNow scheduler is not executable: %s\n' "$scheduler" >&2
   exit 4
@@ -58,6 +61,7 @@ trap cleanup EXIT
 
 scheduler_xml=$(xml_escape "$scheduler")
 docker_xml=$(xml_escape "$docker_bin")
+runtime_path_xml=$(xml_escape "$runtime_path")
 stdout_xml=$(xml_escape "$log_dir/schedule.stdout.log")
 stderr_xml=$(xml_escape "$log_dir/schedule.stderr.log")
 
@@ -76,6 +80,8 @@ cat >"$temp_plist" <<EOF
   <dict>
     <key>NEWSNOW_DOCKER_BIN</key>
     <string>$docker_xml</string>
+    <key>PATH</key>
+    <string>$runtime_path_xml</string>
   </dict>
   <key>RunAtLoad</key>
   <true/>
