@@ -26,6 +26,11 @@ if [ -z "$docker_bin" ] || [ ! -x "$docker_bin" ]; then
   exit 3
 fi
 
+if ! "$docker_bin" compose version >/dev/null 2>&1; then
+  printf 'Docker Compose is unavailable through: %s\n' "$docker_bin" >&2
+  exit 7
+fi
+
 if [ ! -x "$scheduler" ]; then
   printf 'NewsNow scheduler is not executable: %s\n' "$scheduler" >&2
   exit 4

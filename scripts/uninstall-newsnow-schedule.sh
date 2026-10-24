@@ -25,7 +25,12 @@ if [ -z "$launchctl_bin" ] || [ ! -x "$launchctl_bin" ]; then
   exit 5
 fi
 
-"$launchctl_bin" bootout "gui/$user_id" "$plist" >/dev/null 2>&1 || true
+if ! "$launchctl_bin" bootout "gui/$user_id" "$plist" >/dev/null 2>&1; then
+  if "$launchctl_bin" print "gui/$user_id/$label" >/dev/null 2>&1; then
+    printf 'Could not unload %s; its plist was preserved at %s\n' "$label" "$plist" >&2
+    exit 7
+  fi
+fi
 rm -f "$plist"
 
 printf 'Uninstalled %s. Existing logs and container state were preserved.\n' "$label"
